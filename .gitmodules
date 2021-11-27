@@ -1,0 +1,6 @@
+[submodule "mini_debugger/ext/libelfin"]
+	path = mini_debugger/ext/libelfin
+	url = git@github.com:aclements/libelfin.git
+[submodule "mini_debugger/ext/linenoise"]
+	path = mini_debugger/ext/linenoise
+	url = git@github.com:antirez/linenoise.git
