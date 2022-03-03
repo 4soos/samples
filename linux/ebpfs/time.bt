@@ -1,0 +1,12 @@
+uprobe:./test:test {
+    printf("input=%d,", arg0);
+    @start = nsecs;
+}
+uretprobe:./test:test {
+    printf("output=%d, cost: %ld ns\n", retval, nsecs-@start);
+}
+END
+{
+    clear(@start);
+}
+
