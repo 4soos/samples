@@ -27,13 +27,20 @@ int main() {
 
     pid_t pid = fork();
     printf("pid %d \n", pid);
+
+    int t = 1;
+    static int y = 0;
+
     if (pid > 0) {
         // parent
         printf("parent %d %d \n", getpid(), getppid());
+        t += 100;
+        printf("parent t++ is %d   y++ is %d \n", t++, y++);
 
     } else if (pid == 0) {
         // child
         printf("child %d %d \n", getpid(), getppid());
+        printf("child t++ is %d   y is %d \n", t++, y);
     }
 
     for (int i = 0; i < 4; i++) {

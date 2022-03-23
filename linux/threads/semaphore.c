@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 struct Node {
     int num;
@@ -14,19 +15,24 @@ struct Node * head = NULL;
 pthread_mutex_t mtx;
 pthread_cond_t condtion;
 
+sem_t psem;
+sem_t csem;
+
 void * producer(void * arg) {
 
     while (true) {
+        sem_wait(&psem);
+
         pthread_mutex_lock(&mtx);
         struct Node * new_node  = (struct Node *) malloc(sizeof(struct Node));
         new_node->next = head;
         head = new_node;
         new_node->num = rand() % 1000;
         printf("PRODUCER:: add node, num: %d l tid-%ld \n", new_node->num, pthread_self());
-
-        pthread_cond_signal(&condtion);
-
         pthread_mutex_unlock(&mtx);
+
+        sem_post(&csem); // 通知消费者
+
         usleep(100);
     }
 
@@ -35,23 +41,18 @@ void * producer(void * arg) {
 
 
 void * customer(void * arg) {
-    sleep(2);
-    while (true) {
-        // 保存头节点指针
-        struct Node * tmp = head;
-        if (head != NULL) {
-            
-            pthread_mutex_lock(&mtx);
-            head = head->next;
-            printf("CUSTOMER:: delete node , num: %d ; tid-%ld \n", tmp->num, pthread_self());
-            pthread_mutex_unlock(&mtx);
 
-            usleep(100);
-        } else {
-            // 等待数据
-            pthread_cond_wait(&condtion, &mtx); // 阻塞时会自行解锁，不阻塞时 重新加锁
-            pthread_mutex_unlock(&mtx);
-        }
+    while (true) {
+        sem_wait(&csem);
+
+        pthread_mutex_lock(&mtx);
+        struct Node * tmp = head;
+        head = head->next;
+        printf("CUSTOMER:: delete node , num: %d ; tid-%ld \n", tmp->num, pthread_self());
+        free(tmp);
+        pthread_mutex_unlock(&mtx);
+
+        sem_post(&psem);
     }
     
     return NULL;
@@ -64,7 +65,9 @@ int main() {
 
     pthread_mutex_init(&mtx, NULL);
 
-    pthread_cond_init(&condtion, NULL);
+    sem_init(&psem, 0, 8);
+    sem_init(&csem, 0, 0);
+
 
     for (int i = 0; i < 5; i++) {
         pthread_create(&ptid[i], NULL, producer, NULL);

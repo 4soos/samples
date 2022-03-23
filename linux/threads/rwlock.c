@@ -19,22 +19,23 @@
 
 int num = 0;
 pthread_mutex_t mtx;
+pthread_rwlock_t rw_mtx;
 
 void * write_num(void * arg) {
     while (true) {
-        pthread_mutex_lock(&mtx);
+        pthread_rwlock_wrlock(&rw_mtx);
         num++;
-        printf("W :: tid: %ld , write num %d \n", pthread_self(), num);
-        usleep(1000*1000);
-        pthread_mutex_unlock(&mtx);
+        printf("\n W:: tid %ld , write num %d \n", pthread_self(), num);
+        usleep(100*1000);
+        pthread_rwlock_unlock(&rw_mtx);
     }
 }
 void * read_num(void * arg) {
     while (true) {
-        pthread_mutex_lock(&mtx);
+        pthread_rwlock_rdlock(&rw_mtx);
         printf("R :: tid: %ld , read num %d \n", pthread_self(), num);
         usleep(100*1000);
-        pthread_mutex_unlock(&mtx);
+        pthread_rwlock_unlock(&rw_mtx);
     }
     return NULL;
 }
@@ -43,7 +44,7 @@ int main() {
     
     // 创建
     pthread_t wtids[3], rtids[5];
-    pthread_mutex_init(&mtx, NULL);
+    pthread_rwlock_init(&rw_mtx, NULL);
 
     for (int i=0; i < 3; i++) {
         pthread_create(&wtids[i], NULL, write_num, NULL);
@@ -64,7 +65,7 @@ int main() {
 
     // 主线程推出保证子线程正常运行
     pthread_exit(NULL);
-    pthread_mutex_destroy(&mtx);
+    pthread_rwlock_destroy(&rw_mtx);
 
     return 0;
 }
