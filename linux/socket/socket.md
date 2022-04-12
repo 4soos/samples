@@ -162,5 +162,145 @@ typedef unsigned short int sa_family_t;
 `sockaddr_in6`，由地址族确定，然后函数内部再强制类型转化为所需的地址类型。
 
 
+##  函数
+
+```c
+// server
+
+// 1. 创建：fd
+socket()
+
+// 2. 绑定: ip, port
+bind()
+
+// 3. 监听： fd
+listen()
+
+// 4. 阻塞等待： 等待客户端发起连接
+accept()
+
+// 5. 通信
+recv()
+send()
+
+// 6. 断开连接
+close()
+
+// ================================================
+
+// client
+// 1. 创建： fd
+socket()
+
+// 2. 连接： ip, port
+connect()
+
+// 3. 通信
+send()
+recv()
+
+// 4. 断开
+close()
+```
+
+### `int socket(int domain, int type, int protocol)`
+
+#### domain: 
+Name         Purpose                                    Man page  
+AF_UNIX      Local communication                        unix(7)  
+
+AF_LOCAL     Synonym for AF_UNIX  
+
+AF_INET      IPv4 Internet protocols                    ip(7)  
+
+AF_AX25      Amateur radio AX.25 protocol               ax25(4)  
+
+AF_IPX       IPX - Novell protocols  
+
+AF_APPLETALK AppleTalk                                  ddp(7)  
+
+AF_X25       ITU-T X.25 / ISO-8208 protocol             x25(7)  
+
+AF_INET6     IPv6 Internet protocols                    ipv6(7)  
+
+AF_DECnet    DECet protocol sockets  
+
+AF_KEY       Key  management protocol, originally de‐  
+            veloped for usage with IPsec  
+
+AF_NETLINK   Kernel user interface device               netlink(7) 
+
+AF_PACKET    Low-level packet interface                 packet(7)  
+
+AF_RDS       Reliable Datagram Sockets (RDS) protocol   rds(7)  
+                                                        rds-rdma(7)  
+
+AF_PPPOX     Generic PPP transport layer, for setting  
+            up L2 tunnels (L2TP and PPPoE)  
+
+AF_LLC       Logical  link  control  (IEEE 802.2 LLC)  
+            protocol  
+
+AF_IB        InfiniBand native addressing  
+
+AF_MPLS      Multiprotocol Label Switching  
+
+AF_CAN       Controller Area Network  automotive  bus protocol  
+
+AF_TIPC      TIPC, "cluster domain sockets" protocol  
+
+AF_BLUETOOTH Bluetooth low-level socket protocol  
+
+AF_ALG       Interface to kernel crypto API  
+
+AF_VSOCK     VSOCK   (originally  "VMWare  VSockets")   vsock(7)
+            protocol for hypervisor-guest communication 
+
+AF_KCM       KCM  (kernel connection multiplexer) in‐terface  
+
+AF_XDP       XDP (express data path) interface  
+
+#### type
+
+ The socket has the indicated type, which specifies the communication semantics.  Currently defined types are:
+
+SOCK_STREAM     Provides sequenced, reliable, two-way, connection-based byte streams.  An out-of-band data transmission mech‐anism may be supported. 
+
+SOCK_DGRAM      Supports datagrams (connectionless, unreliable messages of a fixed maximum length).
+
+SOCK_SEQPACKET  Provides a sequenced, reliable, two-way connection-based data transmission path for datagrams of fixed  maxi‐mum length; a consumer is required to read an entire packet with each input system call.
+
+SOCK_RAW        Provides raw network protocol access.
+
+SOCK_RDM        Provides a reliable datagram layer that does not guarantee ordering.
+
+SOCK_PACKET     Obsolete and should not be used in new programs; see packet(7).
+
+
+
+
+
+### `int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)`;
+将fd 和 ip.port 关联
+
+### `int listen(int sockfd, int backlog)`;
+监听fd上面连接; 
+backlog: 未连接和已连接的最大值, `cat /proc/sys/net/core/somaxconn`
+
+### `int accept(int sockfd, struct sockaddr * addr, socklent_t *addrlen)`;
+接受client 连接， 默认为阻塞;
+
+addr: 传出参数， 记录连接成功后客户端的地址信息 ip, port
+
+### `int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)`;
+连接服务器；
+
+
+### `ssize_t write(int fd, const void *buf, size_t count)`;
+
+### `ssize_t read(int fd, void *buf, size_t count)`;
+
+
+
 
 
