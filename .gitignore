@@ -3,9 +3,14 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,linux,c,c++,cmake,jetbrains,jetbrains+all,jetbrains+iml
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,linux,c,c++,cmake,jetbrains,jetbrains+all,jetbrains+iml
 
+
 ### C ###
 # Prerequisites
 *.d
+
+# .vscode
+.vscode
+
 
 # Object files
 *.o
@@ -82,7 +87,7 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
+projects/**/Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
