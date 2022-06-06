@@ -7,7 +7,33 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdbool.h>
+#include <signal.h>
+#include <wait.h>
+
+__sighandler_t recycle_child(void) {
+    while (true) {
+        int ret = waitpid(-1, NULL, WNOHANG);
+        if (ret == -1) {
+            // 
+            break;
+        } else if (ret == 0) {
+            break;
+        } else if (ret > 0){
+            printf("child process id %d recycle /n", ret);
+        }
+    }
+}
+
 int main() {
+
+    struct sigaction act = {
+        .sa_flags = 0,
+        .sa_handler = recycle_child()
+    };
+    sigemptyset(&act.sa_mask);
+
+    sigaction(SIGCHLD, &act, NULL);
 
     //  创建socket
     int lfd = socket(PF_INET, SOCK_STREAM, 0);

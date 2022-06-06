@@ -301,6 +301,99 @@ addr: 传出参数， 记录连接成功后客户端的地址信息 ip, port
 ### `ssize_t read(int fd, void *buf, size_t count)`;
 
 
+## IO多路复用
+使程序能同时监听多个文件描述符, 提高程序的性能。
+Linux 下面的主要有：
+- select
+- poll
+- epoll
+
+### 简介
+
+阻塞(BIO) 缺点：
+- 线程或进程会消耗资源
+- 线程或进程调度消耗CPU资源
+- 阻塞
+
+
+非阻塞&忙轮询：
+
+提高程序的执行效率(占用更多的CPU资源)
+
+
+IO多路转接技术(NIO)：
+
+- select / poll：
+    只通知有数据到达， 具体是fd需要遍历查找
+
+- epoll：
+    通知到具体的fd
+
+核心是用户不需要自己监视客户端连接和数据通信，将工作都委托给内核去做。
+
+
+### select 
+
+1. 首先要构造一个关于文件描述符的列表, 将要监听的文件描述符添加到该列表中
+
+2. 调用系统函数，监听列表中的文件描述符，直到一个或多个进行了IO操作时才进行返回
+    1. 这个函数是阻塞的
+    2. 检测操作是在内核中完成的
+
+3. 在返回时，他会告诉进程有多少描述符要进行IO操作
+
+```c
+// sizeof(fd_set) = 128 byte 1024byte
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/select.h>
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+/*    - 参数：
+        - nfds : 委托内核检测的最大文件描述符的值 + 1
+        - readfds : 要检测的文件描述符的读的集合，委托内核检测哪些文件描述符的读的属性
+        - 一般检测读操作
+        - 对应的是对方发送过来的数据，因为读是被动的接收数据，检测的就是读缓冲区
+        - 是一个传入传出参数
+        - writefds : 要检测的文件描述符的写的集合，委托内核检测哪些文件描述符的写的属性
+        - 委托内核检测写缓冲区是不是还可以写数据（不满的就可以写）
+        - exceptfds : 检测发生异常的文件描述符的集合
+        - timeout : 设置的超时时间
+            struct timeval {
+                longtv_sec; // seconds
+                longtv_usec;// microseconds
+            };
+        - NULL : 永久阻塞，直到检测到了文件描述符有变化
+        - tv_sec = 0 tv_usec = 0， 不阻塞
+        - tv_sec > 0 tv_usec > 0， 阻塞对应的时间
+        - 返回值 :
+        - -1 : 失败
+        - >0(n) : 检测的集合中有n个文件描述符发生了变化
+**/
+
+// 将参数文件描述符fd对应的标志位设置为0
+void FD_CLR(int fd, fd_set *set);
+
+// 判断fd对应的标志位是0还是1， 返回值 ： fd对应的标志位的值，0，返回0， 1，返回1
+int FD_ISSET(int fd, fd_set *set);
+
+// 将参数文件描述符fd 对应的标志位，设置为1
+void FD_SET(int fd, fd_set *set);
+```
+
+每次调用select， 都需要把fd集合从用户态拷贝到内核， 这个开销在fd很多时会很大;
+同时每次调用select都需要在内核遍历传递进来的所有fd,这个开销在fd很多时也很大;
+select 支持的最大fd集合默认是1024;
+fd集合不能重用，每次都需要重置;
+
+
+
+
+
+
+
+
+
 
 
 
